@@ -37,6 +37,6 @@ COPY ./checkpoint.pth /code/app/routers/checkpoint.pth
 EXPOSE 8080
 
 # 10. FastAPI 서버 실행 (uvicorn 사용)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--ssl-keyfile", "/etc/ssl/private/privkey.pem", "--ssl-certfile", "/etc/ssl/certs/fullchain.pem"]
 # CMD ["python", "app/main.py"]
 
