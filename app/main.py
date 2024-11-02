@@ -24,4 +24,11 @@ app.include_router(crawl_router)
 app.include_router(model_router)
 
 if __name__ == '__main__':
-    uvicorn.run("main:app", host=IP_NUM, port=int(PORT_NUM), workers=1)
+    uvicorn.run(
+        "app.main:app", 
+        host=IP_NUM, 
+        port=int(PORT_NUM), 
+        workers=1, 
+        ssl_keyfile="/etc/ssl/private/privkey.pem", 
+        ssl_certfile="/etc/ssl/certs/fullchain.pem"
+    )

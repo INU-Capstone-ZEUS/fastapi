@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-# LSTM ¸ðµ¨ Á¤ÀÇ
+# LSTM ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, num_layers=1, drop_out=0.5):
         super(LSTMModel, self).__init__()
@@ -13,10 +13,10 @@ class LSTMModel(nn.Module):
 
     def forward(self, x):
         out, (hn, cn) = self.lstm(x)
-        out = self.fc(out[:, -1, :])  # ¸¶Áö¸· ½ÃÁ¡ÀÇ Ãâ·ÂÀ» »ç¿ë
+        out = self.fc(out[:, -1, :])  # ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         return out
 
-# ¸ðµ¨ ÃÊ±âÈ­ ¹× ·Îµå
+# ï¿½ï¿½ ï¿½Ê±ï¿½È­ ï¿½ï¿½ ï¿½Îµï¿½
 input_size = 13  
 hidden_size = 64
 output_size = 1
@@ -26,24 +26,24 @@ drop_out = 0.3
 model = LSTMModel(input_size, hidden_size, output_size, num_layers, drop_out=drop_out)
 #model.load_state_dict(torch.load('./checkpoint.pth'))
 #model.load_state_dict(torch.load('routers/checkpoint.pth', weights_only=True))
-model.load_state_dict(torch.load('/code/app/routers/checkpoint.pth', weights_only=True))
+model.load_state_dict(torch.load('./checkpoint.pth', weights_only=True))
 model.eval()
 
-# ¶ó¿ìÅÍ ¼³Á¤
+# ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 router = APIRouter()
 
-# ¿äÃ» µ¥ÀÌÅÍ ¸ðµ¨
+# ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 class ModelInput(BaseModel):
-    data: list  # 3D µ¥ÀÌÅÍ¸¦ ÆòÅºÈ­ÇÑ ¸®½ºÆ®·Î ¹Þ½À´Ï´Ù. e.g., [¹èÄ¡*½ÃÄö½º*ÀÔ·Â Å©±â]
+    data: list  # 3D ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ÅºÈ­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½Ï´ï¿½. e.g., [ï¿½ï¿½Ä¡*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*ï¿½Ô·ï¿½ Å©ï¿½ï¿½]
 
 @router.post("/predict")
 async def predict(input_data: ModelInput):
     try:
-        # ÀÔ·Â µ¥ÀÌÅÍ ·Îµå ¹× ÇüÅÂ º¯È¯
-        data = np.array(input_data.data).reshape(-1, 10, input_size)  # ¹èÄ¡, ½ÃÄö½º ±æÀÌ, ÀÔ·Â Å©±â
+        # ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
+        data = np.array(input_data.data).reshape(-1, 10, input_size)  # ï¿½ï¿½Ä¡, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½Ô·ï¿½ Å©ï¿½ï¿½
         data_tensor = torch.tensor(data, dtype=torch.float32)
         
-        # ¿¹Ãø ¼öÇà
+        # ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         with torch.no_grad():
             output = model(data_tensor)
             prediction = output.numpy().tolist()
