@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual Environment
+.venv/
+venv/
+
+# Environment Variables
+.env
+
+# Logs
+*.log
+
+# IDE-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
+
+app/fullchain.pem
+app/privkey.pem

@@ -13,4 +13,4 @@ def get_local_ip():
     return ip
 
 IP_NUM = get_local_ip()
-PORT_NUM = "9010"
+PORT_NUM = "8080"

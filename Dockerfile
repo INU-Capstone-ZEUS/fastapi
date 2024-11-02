@@ -21,19 +21,22 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 # 5. pytorch 다운로드
 RUN pip install torch==2.5.0 --index-url https://download.pytorch.org/whl/cpu
 
+# 6. 인증서 파일 복사
+COPY ./app/fullchain.pem /etc/ssl/certs/fullchain.pem
+COPY ./app/privkey.pem /etc/ssl/private/privkey.pem
 
-# 6. 파이썬 의존성 파일 복사 및 설치
+# 7. 파이썬 의존성 파일 복사 및 설치
 COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-# 7. 애플리케이션 파일 복사
+# 8. 애플리케이션 파일 복사
 COPY ./app /code/app
 COPY ./checkpoint.pth /code/app/routers/checkpoint.pth
 
-# 8. FastAPI에서 사용할 포트 열기
+# 9. FastAPI에서 사용할 포트 열기
 EXPOSE 8080
 
-# 9. FastAPI 서버 실행 (uvicorn 사용)
+# 10. FastAPI 서버 실행 (uvicorn 사용)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 # CMD ["python", "app/main.py"]
 
