@@ -18,7 +18,7 @@ def preprecessingData(df):
     # df = df[["date"] + cols]
     # df['date'] = pd.to_datetime(df['date'])
 
-    df["거래대금"] = round(df["거래대금"]/1000000, 4)
+    df["Amount"] = round(df["Amount"]/1000000, 4)
 
     return df
 
