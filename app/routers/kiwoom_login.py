@@ -6,7 +6,7 @@ import uvicorn
 app = FastAPI()
 router = APIRouter()
 
-KIWOOM_API_URL = "http://127.0.0.1:5000"
+KIWOOM_API_URL = "http://192.168.0.20:5000"
 
 @router.get("/login")
 @router.post("/login")
