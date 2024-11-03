@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 import httpx
+import uvicorn
 
 app = FastAPI()
 router = APIRouter()
@@ -29,4 +30,3 @@ async def kiwoom_user_info():
         raise HTTPException(status_code=response.status_code, detail="Failed to get user info from Kiwoom API")
 
 app.include_router(router, prefix="/kiwoom")
-
