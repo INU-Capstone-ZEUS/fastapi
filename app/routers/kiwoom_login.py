@@ -1,24 +1,5 @@
 from fastapi import APIRouter,HTTPException
 import httpx
-import requests
-import time
-import threading
-
-# def keep_alive_session():
-#     global kiwoom
-#     while True:
-#         state = kiwoom.GetConnectState()
-#         if state == 0:
-#             kiwoom.CommConnect(block=True)
-#         time.sleep(300)
-
-# @router.post("/login")
-# def login():
-#     global kiwoom
-    
-#     kiwoom.CommConnect(block=True)
-#     threading.Thread(target=keep_alive_session, daemon=True).start()
-#     return {"message": "로그인 완료"}
 
 
 router = APIRouter()
