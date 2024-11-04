@@ -3,77 +3,8 @@ from pydantic import BaseModel
 import torch
 import torch.nn as nn
 import numpy as np
-import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 
-
-## Processing and Feature ============================================
-def preprecessingData(df):
-    ## µ¥ÀÌÅÍ ÀüÃ³¸®
-    # df['date'] = pd.to_datetime(df['³¯Â¥'].astype(str) + df['½Ã°£'].astype(str).str.zfill(4), format='%Y%m%d%H%M')
-    # cols = list(df.columns)
-    # cols.remove('³¯Â¥')
-    # cols.remove('½Ã°£')
-    # cols.remove('date')
-    # df = df[["date"] + cols]
-    # df['date'] = pd.to_datetime(df['date'])
-
-    df["Amount"] = round(df["Amount"]/1000000, 4)
-
-    return df
-
-
-# º¼¸°Àú ¹êµå °è»ê ÇÔ¼ö
-def calculatePriceBB(df, window=20, num_std=2):
-    df['PriceBB_center'] = df['End'].rolling(window=window).mean()  # 20ÀÏ ÀÌµ¿ Æò±Õ
-    df['STD20'] = df['End'].rolling(window=window).std()   # 20ÀÏ Ç¥ÁØ ÆíÂ÷
-    df['PriceBB_upper'] = df['PriceBB_center'] + (num_std * df['STD20'])       # »ó´Ü ¹êµå
-    df['PriceBB_lower'] = df['PriceBB_center'] - (num_std * df['STD20'])       # ÇÏ´Ü ¹êµå
-
-    return df
-
-
-# ÀÌµîºÐ¼± °è»ê ÇÔ¼ö
-def calculate_yellow_box(df):
-
-    most_high = df.loc[df.index[0], "High"]
-    most_low = df.loc[df.index[0], "Low"]
-    yellow_line = []
-    red_line = []
-
-    for idx in df.index:
-
-        if most_high < df.loc[idx, "High"]:
-            most_high = df.loc[idx, "High"]
-
-        if most_low > df.loc[idx, "Low"]:
-            most_low = df.loc[idx, "Low"]
-
-        avg = (most_high + most_low)/2
-        yellow_line.append(avg)
-        red_line.append((avg + most_high)/2)
-
-    df["Yellow_line"] = yellow_line
-    df["Red_line"] = red_line
-
-    return df
-
-
-# °Å·¡´ë±Ý º¼¹ê ±×¸®±â
-def calculateTamountBB(df, window=20, num_std=2):
-    df['AmountBB_center'] = df['Amount'].rolling(window=window).mean()  # 20ÀÏ ÀÌµ¿ Æò±Õ
-    df_std = df['Amount'].rolling(window=window).std()   # 20ÀÏ Ç¥ÁØ ÆíÂ÷
-    df['AmountBB_upper'] = df['AmountBB_center'] + (num_std * df_std)       # »ó´Ü ¹êµå
-    df['AmountBB_lower'] = df['AmountBB_center'] - (num_std * df_std)       # ÇÏ´Ü ¹êµå
-    df['AmountBB_lower'] = df['AmountBB_center'].apply(lambda x: 0 if x < 0 else x)
-
-    return df
-
-
-
-
-## Model ============================================
-# LSTM ¸ðµ¨ ¼±¾ð
+# LSTM ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, num_layers=1, drop_out=0.5):
         super(LSTMModel, self).__init__()
@@ -82,9 +13,10 @@ class LSTMModel(nn.Module):
 
     def forward(self, x):
         out, (hn, cn) = self.lstm(x)
-        out = self.fc(out[:, -1, :])  #                        
+        out = self.fc(out[:, -1, :])  # ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         return out
 
+# ï¿½ï¿½ ï¿½Ê±ï¿½È­ ï¿½ï¿½ ï¿½Îµï¿½
 input_size = 13  
 hidden_size = 64
 output_size = 1
@@ -94,61 +26,29 @@ drop_out = 0.3
 model = LSTMModel(input_size, hidden_size, output_size, num_layers, drop_out=drop_out)
 #model.load_state_dict(torch.load('./checkpoint.pth'))
 #model.load_state_dict(torch.load('routers/checkpoint.pth', weights_only=True))
-model.load_state_dict(torch.load('/code/app/routers/checkpoint.pth', weights_only=True))
+model.load_state_dict(torch.load('./checkpoint.pth', weights_only=True))
 model.eval()
 
-
-
-
-## API ============================================
-#           
+# ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 router = APIRouter()
 
-#   ?          
+# ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 class ModelInput(BaseModel):
-    # key-value ÇüÅÂÀÇ µñ¼Å³Ê¸®·Î µé¾î¿Â´Ù°í °¡Á¤.
-    data: dict
+    data: list  # 3D ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ÅºÈ­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½Ï´ï¿½. e.g., [ï¿½ï¿½Ä¡*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*ï¿½Ô·ï¿½ Å©ï¿½ï¿½]
 
 @router.post("/predict")
 async def predict(input_data: ModelInput):
     try:
-        # PJH. 11.02
-        # µñ¼Å³Ê¸®·Î ¹ÞÀº µ¥ÀÌÅÍ¸¦ µ¥ÀÌÅÍ ÇÁ·¹ÀÓÀ¸·Î ¸¸µé±â.
-        # µ¥ÀÌÅÍ ¼ö½Å ¹æ½ÄÀÌ ´Þ¶óÁú °æ¿ì (Ex. µñ¼Å³Ê¸®°¡ ¾Æ´Ï¶ó ÆÄÀÏÂ°·Î ¿Ã °æ¿ì)
-        # À§ ModelInputÀÇ Çü½ÄÀ» ¼öÁ¤ÇØ¾ß ÇÏ¸Ï, ÃÖÁ¾ÀûÀ¸·Î ¹ÞÀº µ¥ÀÌÅÍ¸¦
-        # df¶ó´Â µ¥ÀÌÅÍÇÁ·¹ÀÓÀ¸·Î ¿Ï¼º ½ÃÄÑ¾ß ÇÑ´Ù.
-        df = pd.DataFrame(input_data.data)
-
-
-        ## ÀüÃ³¸®
-        df = preprecessingData(df)
-        ## ÀÔ·Â ÇÇÃ³ »ý¼º
-        df = calculateTamountBB(df)
-        df = calculate_yellow_box(df)
-        df = calculatePriceBB(df)
-        target_columns = ['End', 'Start', 'High', 'Low', 
-                          'Amount', 'AmountBB_center', 'AmountBB_upper', 'AmountBB_lower',
-                          'Red_line', 'Yellow_line',
-                          'PriceBB_center', 'PriceBB_upper', 'PriceBB_lower']
+        # ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
+        data = np.array(input_data.data).reshape(-1, 10, input_size)  # ï¿½ï¿½Ä¡, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½Ô·ï¿½ Å©ï¿½ï¿½
+        data_tensor = torch.tensor(data, dtype=torch.float32)
         
-        # scailing
-        feature_columns = df[target_columns].values
-        scaler = MinMaxScaler()
-        
-        ## ÀÔ·Â ½ÃÄö½º ¿Ï¼º : ¿¹»ó shape [1, 10, 13]
-        X_windows = scaler.fit_transform(feature_columns)
-        data_tensor = torch.tensor(X_windows, dtype=torch.float32).unsqueeze(0)[:, -10:, :]
-
-
-        ## Ãß·Ð Start
+        # ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         with torch.no_grad():
-            output = model(data_tensor) # ¿¹»ó Ãâ·Â »çÀÌÁî : [1, 1]
-            prediction = output.squeeze()
-        
-        preds = torch.round(torch.sigmoid(prediction))
+            output = model(data_tensor)
+            prediction = output.numpy().tolist()
 
-        ## ¹ÝÈ¯°ªÀº 0 È¤Àº 1
-        return {"prediction": preds.item()}
+        return {"prediction": prediction}
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
