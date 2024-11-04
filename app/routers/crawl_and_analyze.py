@@ -62,7 +62,7 @@ async def crawl_and_analyze(request: CrawlAndAnalyzeRequest) -> CrawlAndAnalyzeR
     analysis_dto = [AnalysisResDTO(**article) for article in analyzed_articles]
 
     # 응답 데이터를 JSON 파일로 저장
-    file_name = f"{company_name}_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    file_name = f"{company_name}.json"
     with open(file_name, "w", encoding="utf-8") as json_file:
         json.dump([article.dict() for article in analysis_dto], json_file, ensure_ascii=False, indent=4)
 
