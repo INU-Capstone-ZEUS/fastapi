@@ -6,6 +6,7 @@ from app.config.settings import IP_NUM, PORT_NUM
 from app.routers.root import router as root_router
 from app.routers.crawl_and_analyze import router as crawl_router
 from app.routers.model_predict import router as model_router
+from app.routers.kiwoom_login import router as kiwoom_router
 
 app = FastAPI()
 
@@ -22,6 +23,7 @@ app.add_middleware(
 app.include_router(root_router)
 app.include_router(crawl_router)
 app.include_router(model_router)
+#app.include_router(kiwoom_router, prefix='/kiwoom', tags=['kiwoom'])
 
 if __name__ == '__main__':
     uvicorn.run(

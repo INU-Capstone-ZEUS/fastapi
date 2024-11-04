@@ -1,24 +1,28 @@
-from fastapi import APIRouter
+import json
+import boto3
+from datetime import datetime
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Dict, Any, List
+from typing import List
 from .crawl_news import crawl_news, CrawlError 
 from .analyze_news import analyze_news
-from fastapi import HTTPException
 
 router = APIRouter()
+
+# S3 클라이언트 생성
+s3_client = boto3.client("s3")
 
 # Gemini 분석 요청 
 class AnalysisReqDTO(BaseModel):
     evaluation: str
-    reason: str
     summary: str
 
 # Gemini 분석 응답
 class AnalysisResDTO(BaseModel):
     evaluation: str
-    reason: str
     summary: str
     link: str
+    title: str
 
 
 # 전체 요청
@@ -46,22 +50,9 @@ async def crawl_and_analyze(request: CrawlAndAnalyzeRequest) -> CrawlAndAnalyzeR
     except CrawlError as e:  # CrawlError만 처리
         raise HTTPException(status_code=400, detail=f"Crawling error: {e.message}")
 
-        # return CrawlAndAnalyzeResponse(
-        #     status="failed",
-        #     total_articles=0,
-        #     analysis=[],
-        #     error_message=e.message
-        # )
     except Exception as e:
         # 예기치 않은 에러 처리
         raise HTTPException(status_code=400, detail=f"Crawling error: {e.message}")
-
-        # return CrawlAndAnalyzeResponse(
-        #     status="failed",
-        #     total_articles=0,
-        #     analysis=[],
-        #     error_message=f"Unexpected error: {str(e)}"
-        # )
 
     # 분석 단계
     try:
@@ -69,20 +60,34 @@ async def crawl_and_analyze(request: CrawlAndAnalyzeRequest) -> CrawlAndAnalyzeR
     except Exception as e:
         # Gemini API 요청 제한으로 인해 발생하는 에러 처리
         raise HTTPException(status_code=400, detail=f"Gemini API error: {e.message}")
-        # return CrawlAndAnalyzeResponse(
-        #     status="failed",
-        #     total_articles=0,
-        #     analysis=[],
-        #     error_message=f"Gemini API error: {str(e)}"
-        # )
+
 
     # 분석 결과를 DTO로 변환
     analysis_dto = [AnalysisResDTO(**article) for article in analyzed_articles]
 
+    # 응답 데이터를 JSON 파일로 저장
+    # file_name = f"{company_name}_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    # with open(file_name, "w", encoding="utf-8") as json_file:
+    #     json.dump([article.dict() for article in analysis_dto], json_file, ensure_ascii=False, indent=4)
+    
+    # JSON 데이터 S3 업로드
+    s3_bucket_name = "dev-jeus-bucket"  
+    file_name = f"{company_name}_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    json_data = json.dumps([article.dict() for article in analysis_dto], ensure_ascii=False, indent=4)
+
+    try:
+        s3_client.put_object(
+            Bucket=s3_bucket_name,
+            Key=file_name,
+            Body=json_data,
+            ContentType='application/json'
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload file to S3: {e}")
+    
     # 응답 데이터 생성
     return CrawlAndAnalyzeResponse(
         status="success",
         total_articles=len(analysis_dto),
         analysis=analysis_dto
     )
-
