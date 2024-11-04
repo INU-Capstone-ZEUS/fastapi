@@ -5,20 +5,9 @@ import socket
 
 router = APIRouter()
 
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-    except Exception:
-        ip = "127.0.0.1"
-    finally:
-        s.close()
-    return ip
 
-KIWOOM_API_IP = get_local_ip()
-KIWOOM_API_PORT = 5000
-KIWOOM_API_URL = f"http://{KIWOOM_API_IP}:{KIWOOM_API_PORT}"
+
+KIWOOM_API_URL = "http://127.0.0.1:5000"
 
 @router.post("/login")
 async def kiwoom_login():
