@@ -26,7 +26,7 @@ drop_out = 0.3
 model = LSTMModel(input_size, hidden_size, output_size, num_layers, drop_out=drop_out)
 #model.load_state_dict(torch.load('./checkpoint.pth'))
 #model.load_state_dict(torch.load('routers/checkpoint.pth', weights_only=True))
-model.load_state_dict(torch.load('./checkpoint.pth', weights_only=True))
+model.load_state_dict(torch.load('/code/app/routers/checkpoint.pth', weights_only=True))
 model.eval()
 
 # ����� ����
