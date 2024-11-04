@@ -20,7 +20,6 @@ KIWOOM_API_IP = get_local_ip()
 KIWOOM_API_PORT = 5000
 KIWOOM_API_URL = f"http://{KIWOOM_API_IP}:{KIWOOM_API_PORT}"
 
-@router.get("/login")
 @router.post("/login")
 async def kiwoom_login():
     async with httpx.AsyncClient() as client:
