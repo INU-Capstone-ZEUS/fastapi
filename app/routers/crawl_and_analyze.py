@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import List
 from .crawl_news import crawl_news, CrawlError 
 from .analyze_news import analyze_news
+from .websocket import notify_clients
 
 router = APIRouter()
 s3_client = boto3.client("s3")
@@ -74,6 +75,9 @@ async def crawl_and_analyze(request: CrawlAndAnalyzeRequest) -> CrawlAndAnalyzeR
             Body=json.dumps(updated_data, ensure_ascii=False, indent=4),
             ContentType='application/json'
         )
+        
+        await notify_clients({company_name})  # 클라이언트 알림
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload file to S3: {e}")
 
