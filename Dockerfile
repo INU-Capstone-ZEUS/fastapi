@@ -39,7 +39,6 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 # 8. 애플리케이션 파일 복사
 COPY ./app /code/app
-COPY ./checkpoint.pth /code/app/routers/checkpoint.pth
 
 # 9. FastAPI에서 사용할 포트 열기
 EXPOSE 8080
