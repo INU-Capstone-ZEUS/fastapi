@@ -62,7 +62,7 @@ class Args():
 
 args = Args()
 model = Model(args)
-model.load_state_dict(torch.load('../checkpoints/checkpoint_nontft.pth', weights_only=True))
+model.load_state_dict(torch.load('./checkpoints/checkpoint_nontft.pth', weights_only=True))
 model.eval()
 
 
